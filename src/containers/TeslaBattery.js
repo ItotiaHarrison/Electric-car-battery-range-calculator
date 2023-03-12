@@ -1,32 +1,59 @@
-import React, { useState } from 'react';
-import TeslaCar from '../components/TeslaCar/TeslaCar';
-import TeslaNotice from '../components/TeslaNotice/TeslaNotice';
-import TeslaStats from '../components/TeslaStats/TeslaStats';
-import './TeslaBattery.css';
-import TeslaCounter from '../components/TeslaCounter/TeslaCounter';
+import React, { useState, useEffect } from "react";
+import "./TeslaBattery.css";
+import TeslaNotice from "../components/TeslaNotice/TeslaNotice";
+import TeslaCar from "../components/TeslaCar/TeslaCar";
+import TeslaStats from "../components/TeslaStats/TeslaStats";
+import TeslaCounter from "../components/TeslaCounter/TeslaCounter";
+import TeslaClimate from "../components/TeslaClimate/TeslaClimate";
+import { getModelData } from "../services/BatteryService";
+//import TeslaWheels from "../components/TeslaWheels/TeslaWheels";
 
 const TeslaBattery = (props) => {
+  const [carstats, setCarStats] = useState([]);
   const [config, setConfig] = useState({
     speed: 55,
     temperature: 20,
     climate: true,
     wheels: 19,
   });
-  const [carstats, setCarStats] = useState([]);
+
+  useEffect(() => {
+    statsUpdate();
+  }, []);
+
+  const calculateStats = (models, value) => {
+    const dataModels = getModelData();
+    return models.map((model) => {
+      const { speed, temperature, climate, wheels } = value;
+      const miles =
+        dataModels[model][wheels][climate ? "on" : "off"].speed[speed][
+          temperature
+        ];
+      return {
+        model,
+        miles,
+      };
+    });
+  };
+
+  const statsUpdate = () => {
+    const carModels = ["60", "60D", "75", "75D", "90D", "P100D"];
+    setCarStats(calculateStats(carModels, config));
+  };
 
   const updateCounterState = (title, newValue) => {
-    const newConfig = { ...config };
-    // update config state with new value
-    title === 'Speed' ? newConfig['speed'] = newValue : newConfig['temperature'] = newValue;
-    // update our state
-    setConfig(newConfig);
+    const updatedConfig = { ...config };
+    title === "Speed"
+      ? (updatedConfig.speed = newValue)
+      : (updatedConfig.temperature = newValue);
+    setConfig(updatedConfig);
   };
 
   const increment = (e, title) => {
     e.preventDefault();
     let currentValue, maxValue, step;
     const { speed, temperature } = props.counterDefaultVal;
-    if (title === 'Speed') {
+    if (title === "Speed") {
       currentValue = config.speed;
       maxValue = speed.max;
       step = speed.step;
@@ -45,7 +72,7 @@ const TeslaBattery = (props) => {
     e.preventDefault();
     let currentValue, minValue, step;
     const { speed, temperature } = props.counterDefaultVal;
-    if (title === 'Speed') {
+    if (title === "Speed") {
       currentValue = config.speed;
       minValue = speed.min;
       step = speed.step;
@@ -58,6 +85,19 @@ const TeslaBattery = (props) => {
       const newValue = currentValue - step;
       updateCounterState(title, newValue);
     }
+  };
+
+  const handleChangeClimate = () => {
+    const updatedConfig = { ...config };
+    updatedConfig.climate = !config.climate;
+    setConfig(updatedConfig);
+  };
+
+  const handleChangeWheels = (size) => {
+    const newConfig = { ...config };
+    newConfig['wheels'] = size;
+    setConfig(newConfig);
+    statsUpdate();
   };
 
   return (
@@ -79,6 +119,15 @@ const TeslaBattery = (props) => {
             increment={increment}
             decrement={decrement}
           />
+          <TeslaClimate
+            value={config.climate}
+            limit={config.temperature > 10}
+            handleChangeClimate={handleChangeClimate}
+          />
+          {/* <TeslaWheels
+            value={this.state.config.wheels}
+            handleChangeWheels={this.handleChangeWheels}
+          /> */}
         </div>
       </div>
       <TeslaNotice />
