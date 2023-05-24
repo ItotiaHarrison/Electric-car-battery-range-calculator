@@ -6,7 +6,8 @@ import TeslaStats from "../components/TeslaStats/TeslaStats";
 import TeslaCounter from "../components/TeslaCounter/TeslaCounter";
 import TeslaClimate from "../components/TeslaClimate/TeslaClimate";
 import { getModelData } from "../services/BatteryService";
-//import TeslaWheels from "../components/TeslaWheels/TeslaWheels";
+import TeslaWheels from "../components/TeslaWheels/TeslaWheels";
+
 
 const TeslaBattery = (props) => {
   const [carstats, setCarStats] = useState([]);
@@ -19,7 +20,7 @@ const TeslaBattery = (props) => {
 
   useEffect(() => {
     statsUpdate();
-  }, []);
+  });
 
   const calculateStats = (models, value) => {
     const dataModels = getModelData();
@@ -124,11 +125,12 @@ const TeslaBattery = (props) => {
             limit={config.temperature > 10}
             handleChangeClimate={handleChangeClimate}
           />
-          {/* <TeslaWheels
-            value={this.state.config.wheels}
-            handleChangeWheels={this.handleChangeWheels}
-          /> */}
-        </div>
+          </div>
+          <TeslaWheels
+            value={config.wheels}
+            handleChangeWheels={handleChangeWheels}
+          />
+        
       </div>
       <TeslaNotice />
     </form>
